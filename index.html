@@ -1,0 +1,1108 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>ALPACEL | Agenda de Anomalías, Visitas & Zonas</title>
+<style>
+:root{
+  --bg:#0b1220; --card:#121b2f; --card2:#0f172a; --text:#e5e7eb; --muted:#9ca3af;
+  --line:rgba(255,255,255,.08); --ok:#22c55e; --warn:#f59e0b; --bad:#ef4444; --info:#60a5fa;
+  --shadow: 0 14px 35px rgba(0,0,0,.35); --radius:18px;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  background: radial-gradient(1200px 800px at 10% 10%, rgba(96,165,250,.22), transparent 60%),
+             radial-gradient(900px 600px at 90% 20%, rgba(245,158,11,.18), transparent 55%),
+             linear-gradient(180deg, #071022, #050816 55%, #040612);
+  color:var(--text);
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Noto Sans", "Liberation Sans", sans-serif;
+}
+header{position:sticky; top:0; z-index:10; backdrop-filter: blur(10px); background: rgba(5,8,22,.6); border-bottom:1px solid var(--line);}
+.wrap{max-width:1180px; margin:0 auto; padding:18px 16px;}
+.title{display:flex; gap:14px; align-items:flex-start; justify-content:space-between; flex-wrap:wrap;}
+.brand{display:flex; gap:12px; align-items:center;}
+.logo{width:44px; height:44px; border-radius:14px; background: linear-gradient(135deg, rgba(96,165,250,1), rgba(34,197,94,.9)); box-shadow: var(--shadow); display:grid; place-items:center; font-weight:900; color:#061127;}
+h1{margin:0; font-size:18px; letter-spacing:.2px;}
+.sub{margin-top:2px; color:var(--muted); font-size:13px;}
+.toolbar{display:flex; gap:10px; align-items:center; flex-wrap:wrap;}
+.btn{border:1px solid var(--line); background: rgba(255,255,255,.04); color:var(--text); padding:10px 12px; border-radius:14px; cursor:pointer; transition:.2s ease; display:inline-flex; align-items:center; gap:8px; user-select:none;}
+.btn:hover{transform: translateY(-1px); background: rgba(255,255,255,.06)}
+.btn.primary{border-color: rgba(96,165,250,.35); background: rgba(96,165,250,.12)}
+.btn.danger{border-color: rgba(239,68,68,.35); background: rgba(239,68,68,.10)}
+.btn.ok{border-color: rgba(34,197,94,.35); background: rgba(34,197,94,.10)}
+
+.grid{display:grid; grid-template-columns: 420px 1fr; gap:16px; margin-top:16px;}
+@media (max-width: 980px){ .grid{grid-template-columns: 1fr} }
+
+.card{background: linear-gradient(180deg, rgba(18,27,47,.92), rgba(15,23,42,.92)); border:1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); overflow:hidden;}
+.card .hd{padding:14px 14px 10px; border-bottom:1px solid var(--line); display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;}
+.card .hd h2{margin:0; font-size:15px}
+.card .bd{padding:14px}
+.muted{color:var(--muted)}
+
+.row{display:grid; grid-template-columns: 1fr 1fr; gap:10px;}
+.row3{display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px;}
+@media (max-width: 560px){ .row,.row3{grid-template-columns: 1fr} }
+
+label{display:block; font-size:12px; color:var(--muted); margin:6px 0 6px}
+input, select, textarea{width:100%; border-radius:14px; border:1px solid rgba(255,255,255,.10); background: rgba(255,255,255,.04); color:var(--text); padding:10px 12px; outline:none;}
+textarea{min-height:92px; resize:vertical;}
+input::placeholder, textarea::placeholder{color:rgba(229,231,235,.45)}
+
+.chips{display:flex; gap:8px; flex-wrap:wrap}
+.chip{background: rgba(31,42,68,.9); border:1px solid var(--line); padding:6px 10px; border-radius:999px; font-size:12px; color:var(--text); display:inline-flex; gap:8px; align-items:center;}
+.dot{width:8px; height:8px; border-radius:99px; display:inline-block}
+.dot.ok{background:var(--ok)}
+.dot.warn{background:var(--warn)}
+.dot.bad{background:var(--bad)}
+.dot.info{background:var(--info)}
+
+.kpis{display:grid; grid-template-columns: repeat(4, 1fr); gap:10px;}
+@media (max-width: 980px){ .kpis{grid-template-columns: repeat(2, 1fr)} }
+.kpi{padding:12px; border-radius:16px; border:1px solid var(--line); background: rgba(255,255,255,.03);}
+.kpi .n{font-size:20px; font-weight:800; margin-top:4px}
+.kpi .t{font-size:12px; color:var(--muted)}
+
+.list{display:flex; flex-direction:column; gap:10px; padding:12px;}
+.item{border:1px solid var(--line); background: rgba(255,255,255,.03); border-radius:18px; padding:12px; display:grid; grid-template-columns: 1fr auto; gap:10px; transition:.2s ease;}
+.item:hover{transform: translateY(-1px); background: rgba(255,255,255,.05)}
+.item h3{margin:0; font-size:14px}
+.meta{display:flex; gap:8px; flex-wrap:wrap; margin-top:8px}
+.badge{font-size:11px; padding:5px 9px; border-radius:999px; border:1px solid var(--line); background: rgba(255,255,255,.03); color:var(--text);}
+.badge.ok{border-color: rgba(34,197,94,.35); background: rgba(34,197,94,.12)}
+.badge.warn{border-color: rgba(245,158,11,.35); background: rgba(245,158,11,.12)}
+.badge.bad{border-color: rgba(239,68,68,.35); background: rgba(239,68,68,.12)}
+.badge.info{border-color: rgba(96,165,250,.35); background: rgba(96,165,250,.12)}
+.actions{display:flex; flex-direction:column; gap:8px; align-items:flex-end;}
+.small{font-size:12px}
+.hr{height:1px; background: var(--line); margin:12px 0}
+.hint{font-size:12px; color:var(--muted); line-height:1.45}
+.footer{padding:16px; color: var(--muted); font-size:12px; text-align:center; opacity:.9;}
+dialog{border:none; border-radius:20px; width:min(860px, 95vw); background: linear-gradient(180deg, rgba(18,27,47,.98), rgba(15,23,42,.98)); color:var(--text); box-shadow: var(--shadow);}
+dialog::backdrop{background: rgba(0,0,0,.55)}
+.dlg-hd{padding:14px 14px 10px; border-bottom:1px solid var(--line); display:flex; justify-content:space-between; align-items:center; gap:10px;}
+.dlg-bd{padding:14px}
+.follow{border:1px solid var(--line); background: rgba(255,255,255,.03); border-radius:16px; padding:10px; display:flex; flex-direction:column; gap:8px;}
+.follow-entry{border:1px dashed rgba(255,255,255,.14); border-radius:14px; padding:10px;}
+.mono{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;}
+</style>
+</head>
+
+<body>
+<header>
+  <div class="wrap title">
+    <div class="brand">
+      <div class="logo">A</div>
+      <div>
+        <h1>ALPACEL — Agenda de Anomalías, Visitas & Seguimiento</h1>
+        <div class="sub">Zonas + farmacias: que el recorrido se vea y se cuente. Sin poesía en auditoría… solo evidencia.</div>
+      </div>
+    </div>
+
+    <div class="toolbar">
+      <button class="btn primary" id="btnNew" type="button">➕ Nuevo registro</button>
+      <button class="btn" id="btnCatalog" type="button">🏷️ Catálogo Zonas/Farmacias</button>
+      <button class="btn" id="btnExport" type="button">⬇️ Exportar JSON</button>
+      <label class="btn" for="importFile" style="margin:0; cursor:pointer;">⬆️ Importar JSON</label>
+      <input id="importFile" type="file" accept="application/json" style="display:none;">
+      <button class="btn danger" id="btnWipe" type="button">🧹 Borrar todo</button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="grid">
+    <section class="card" id="formCard">
+      <div class="hd">
+        <h2>Registro rápido</h2>
+        <span class="chip"><span class="dot info"></span><span class="small">Guarda automático</span></span>
+      </div>
+      <div class="bd">
+        <form id="anomForm" autocomplete="off">
+          <div class="row">
+            <div>
+              <label for="zona">Zona</label>
+              <select id="zona" required>
+                <option value="">Selecciona…</option>
+                <option>JALISCO 1 - METRO</option>
+                <option>JALISCO 2 - AGS.</option>
+                <option>CD. JUAREZ SUR</option>
+                <option>SINALOA 1</option>
+                <option>GUANAJUATO</option>
+                <option>SINALOA 2</option>
+                <option>VERACRUZ NORTE</option>
+                <option>QUERETARO</option>
+                <option>CD. JUAREZ CENTRO</option>
+                <option>PUEBLA</option>
+                <option>SALTILLO NORTE</option>
+                <option>SALTILLO SUR</option>
+                <option>JALISCO 1 - ALTOS</option>
+                <option>MOCHIS</option>
+                <option>CD. JUAREZ ORIENTE</option>
+                <option>MICHOACAN</option>
+                <option>VERACRUZ SUR</option>
+                <option>CD. JUAREZ NORTE</option>
+                <option>CHIHUAHUA</option>
+              </select>
+              <div class="hint">Si cargas el catálogo, la farmacia se lista solita. Si no, la escribes y listo.</div>
+            </div>
+            <div>
+              <label for="farmaciaSel">Farmacia (del catálogo)</label>
+              <select id="farmaciaSel">
+                <option value="">— Selecciona zona primero —</option>
+              </select>
+              <div class="hint">O escribe manual abajo (por si es nueva o “aún no la capturan”).</div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div>
+              <label for="farmacia">Farmacia (manual)</label>
+              <input id="farmacia" placeholder="Ej: Chihuahua 95, Juárez 30..." />
+            </div>
+            <div>
+              <label for="franquicia">Franquicia</label>
+              <input id="franquicia" placeholder="Ej: F0009" readonly />
+            </div>
+          </div>
+
+          <div class="row">
+            <div>
+              <label for="area">Área</label>
+              <select id="area" required>
+                <option value="">Selecciona…</option>
+                <option>Almacén / Anaqueles</option>
+                <option>Caducidades</option>
+                <option>Temperaturas / Bitácora</option>
+                <option>Receta / Controlados</option>
+                <option>Higiene / Limpieza</option>
+                <option>Atención y trato</option>
+                <option>Caja / Cobro</option>
+                <option>Documentación / PNO</option>
+                <option>Consultorio</option>
+                <option>Otro</option>
+              </select>
+            </div>
+            <div>
+              <label for="tipo">Tipo</label>
+              <select id="tipo" required>
+                <option>Sanitario</option>
+                <option>Operativo</option>
+                <option>Capacitación</option>
+                <option>Auditoría</option>
+                <option selected>Visita</option>
+              </select>
+            </div>
+          </div>
+
+          <label for="descripcion">Descripción (clara y verificable)</label>
+          <textarea id="descripcion" placeholder="Ej: Se revisó caducidad; se detectó X; evidencia en carpeta..." required></textarea>
+
+          <div class="row3">
+            <div>
+              <label for="prioridad">Prioridad</label>
+              <select id="prioridad" required>
+                <option>Alta</option>
+                <option selected>Media</option>
+                <option>Baja</option>
+              </select>
+            </div>
+            <div>
+              <label for="estatus">Estatus</label>
+              <select id="estatus" required>
+                <option>Abierta</option>
+                <option>En proceso</option>
+                <option>En espera</option>
+                <option>Cerrada</option>
+              </select>
+            </div>
+            <div>
+              <label for="fechaDeteccion">Fecha (visita / detección)</label>
+              <input id="fechaDeteccion" type="date" required />
+            </div>
+          </div>
+
+          <div class="row">
+            <div>
+              <label for="responsable">Responsable</label>
+              <input id="responsable" placeholder="Ej: Encargada / Auxiliar / Nombre" />
+            </div>
+            <div>
+              <label for="fechaLimite">Compromiso (fecha límite)</label>
+              <input id="fechaLimite" type="date" />
+            </div>
+          </div>
+
+          <div class="row">
+            <div>
+              <label for="evidencia">Evidencia (link o nota)</label>
+              <input id="evidencia" placeholder="Ej: Drive / Folio / 'Carpeta física'" />
+            </div>
+            <div>
+              <label for="accion">Acción correctiva sugerida</label>
+              <input id="accion" placeholder="Ej: Retirar lote, registrar, capacitar y firma..." required />
+            </div>
+          </div>
+
+          <div class="hr"></div>
+
+          <div class="row">
+            <button type="submit" class="btn ok">✅ Guardar</button>
+            <button type="button" class="btn" id="btnClear">🧼 Limpiar</button>
+          </div>
+
+          <p class="hint">“Visitas realizadas” = visitas únicas por <b>Zona + Farmacia + Fecha</b>. (Contabilidad honesta, como debe ser.)</p>
+        </form>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="hd">
+        <h2>Agenda y métricas</h2>
+        <div class="chips">
+          <span class="chip"><span class="dot ok"></span><span class="small">Cerradas</span></span>
+          <span class="chip"><span class="dot warn"></span><span class="small">En proceso / espera</span></span>
+          <span class="chip"><span class="dot bad"></span><span class="small">Abiertas</span></span>
+        </div>
+      </div>
+
+      <div class="bd">
+        <div class="kpis" id="kpis"></div>
+
+        <div class="hr"></div>
+
+        <div class="row3">
+          <div>
+            <label for="q">Buscar</label>
+            <input id="q" placeholder="Zona, farmacia, franquicia, área, responsable, texto…" />
+          </div>
+          <div>
+            <label for="fZona">Filtrar zona</label>
+            <select id="fZona">
+              <option value="">Todas</option>
+              <option>JALISCO 1 - METRO</option>
+                <option>JALISCO 2 - AGS.</option>
+                <option>CD. JUAREZ SUR</option>
+                <option>SINALOA 1</option>
+                <option>GUANAJUATO</option>
+                <option>SINALOA 2</option>
+                <option>VERACRUZ NORTE</option>
+                <option>QUERETARO</option>
+                <option>CD. JUAREZ CENTRO</option>
+                <option>PUEBLA</option>
+                <option>SALTILLO NORTE</option>
+                <option>SALTILLO SUR</option>
+                <option>JALISCO 1 - ALTOS</option>
+                <option>MOCHIS</option>
+                <option>CD. JUAREZ ORIENTE</option>
+                <option>MICHOACAN</option>
+                <option>VERACRUZ SUR</option>
+                <option>CD. JUAREZ NORTE</option>
+                <option>CHIHUAHUA</option>
+            </select>
+          </div>
+          <div>
+            <label for="fFarmacia">Filtrar farmacia</label>
+            <select id="fFarmacia">
+              <option value="">Todas</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="row3">
+          <div>
+            <label for="fEstatus">Filtrar estatus</label>
+            <select id="fEstatus">
+              <option value="">Todos</option>
+              <option>Abierta</option>
+              <option>En proceso</option>
+              <option>En espera</option>
+              <option>Cerrada</option>
+            </select>
+          </div>
+          <div>
+            <label for="fPrioridad">Filtrar prioridad</label>
+            <select id="fPrioridad">
+              <option value="">Todas</option>
+              <option>Alta</option>
+              <option>Media</option>
+              <option>Baja</option>
+            </select>
+          </div>
+          <div>
+            <label for="sortBy">Ordenar</label>
+            <select id="sortBy">
+              <option value="updated_desc" selected>Última actualización (desc)</option>
+              <option value="date_desc">Fecha (desc)</option>
+              <option value="due_asc">Compromiso (asc)</option>
+              <option value="prio_desc">Prioridad (Alta→Baja)</option>
+              <option value="zona">Zona (A→Z)</option>
+              <option value="farmacia">Farmacia (A→Z)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="row3">
+          <div>
+            <label for="fromDate">Rango desde</label>
+            <input id="fromDate" type="date" />
+          </div>
+          <div>
+            <label for="toDate">hasta</label>
+            <input id="toDate" type="date" />
+          </div>
+          <div class="hint" style="align-self:end">¿Catálogo cargado? Te aparecerán listas bonitas. ¿No? Igual funciona.</div>
+        </div>
+
+        <div class="hr"></div>
+
+        <div class="list" id="list"></div>
+      </div>
+    </section>
+  </div>
+
+  <div class="footer">Hecho para ALPACEL • Costumbre: orden • Futuro: datos que mandan.</div>
+</main>
+
+<!-- DIALOG: CATÁLOGO -->
+<dialog id="dlgCatalog">
+  <div class="dlg-hd">
+    <div>
+      <div style="font-weight:800">🏷️ Catálogo de Zonas / Farmacias</div>
+      <div class="hint">Pega tu tabla (TSV o CSV). Formato: <span class="mono">ZONA | FRANQUICIA | FARMACIA</span></div>
+    </div>
+    <button class="btn" id="btnCatalogClose" type="button">✖️ Cerrar</button>
+  </div>
+  <div class="dlg-bd">
+    <div class="row">
+      <div>
+        <div class="hint">Ejemplo (una línea):</div>
+        <div class="mono hint">PUEBLA	F0009	F0009 - PUEBLA 1</div>
+      </div>
+      <div class="hint" style="align-self:end">
+        Truco de vida: si pegaste duplicados, no pasa nada — se deduplican solitos.
+      </div>
+    </div>
+
+    <label for="catalogText">Pega aquí tu catálogo</label>
+    <textarea id="catalogText" style="min-height:220px" placeholder="ZONA	FRANQUICIA	FARMACIA
+PUEBLA	F0009	F0009 - PUEBLA 1
+..."></textarea>
+
+    <div class="hr"></div>
+
+    <div style="display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap;">
+      <button class="btn ok" id="btnSaveCatalog" type="button">✅ Guardar catálogo</button>
+      <button class="btn danger" id="btnClearCatalog" type="button">🗑️ Borrar catálogo</button>
+    </div>
+
+    <div class="hr"></div>
+    <div class="hint" id="catalogStats">Sin catálogo cargado.</div>
+  </div>
+</dialog>
+
+<!-- DIALOG: DETALLE -->
+<dialog id="dlg">
+  <div class="dlg-hd">
+    <div>
+      <div class="mono" style="font-weight:800" id="dlgTitle">Detalle</div>
+      <div class="hint" id="dlgSub"></div>
+    </div>
+    <button class="btn" id="dlgClose" type="button">✖️ Cerrar</button>
+  </div>
+  <div class="dlg-bd">
+    <div class="row3">
+      <div>
+        <label for="dlgZona">Zona</label>
+        <select id="dlgZona">
+          <option value="">Selecciona…</option>
+          <option>JALISCO 1 - METRO</option>
+                <option>JALISCO 2 - AGS.</option>
+                <option>CD. JUAREZ SUR</option>
+                <option>SINALOA 1</option>
+                <option>GUANAJUATO</option>
+                <option>SINALOA 2</option>
+                <option>VERACRUZ NORTE</option>
+                <option>QUERETARO</option>
+                <option>CD. JUAREZ CENTRO</option>
+                <option>PUEBLA</option>
+                <option>SALTILLO NORTE</option>
+                <option>SALTILLO SUR</option>
+                <option>JALISCO 1 - ALTOS</option>
+                <option>MOCHIS</option>
+                <option>CD. JUAREZ ORIENTE</option>
+                <option>MICHOACAN</option>
+                <option>VERACRUZ SUR</option>
+                <option>CD. JUAREZ NORTE</option>
+                <option>CHIHUAHUA</option>
+        </select>
+      </div>
+      <div>
+        <label for="dlgFarmacia">Farmacia</label>
+        <input id="dlgFarmacia" />
+      </div>
+      <div>
+        <label for="dlgFranquicia">Franquicia</label>
+        <input id="dlgFranquicia" />
+      </div>
+    </div>
+
+    <div class="row3">
+      <div>
+        <label for="dlgFechaDeteccion">Fecha</label>
+        <input id="dlgFechaDeteccion" type="date" />
+      </div>
+      <div>
+        <label for="dlgEstatus">Estatus</label>
+        <select id="dlgEstatus">
+          <option>Abierta</option>
+          <option>En proceso</option>
+          <option>En espera</option>
+          <option>Cerrada</option>
+        </select>
+      </div>
+      <div>
+        <label for="dlgPrioridad">Prioridad</label>
+        <select id="dlgPrioridad">
+          <option>Alta</option>
+          <option>Media</option>
+          <option>Baja</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="row">
+      <div>
+        <label for="dlgTipo">Tipo</label>
+        <select id="dlgTipo">
+          <option>Sanitario</option>
+          <option>Operativo</option>
+          <option>Capacitación</option>
+          <option>Auditoría</option>
+          <option>Visita</option>
+        </select>
+      </div>
+      <div>
+        <label for="dlgFechaLimite">Compromiso (fecha límite)</label>
+        <input id="dlgFechaLimite" type="date" />
+      </div>
+    </div>
+
+    <div class="row">
+      <div>
+        <label for="dlgResponsable">Responsable</label>
+        <input id="dlgResponsable" />
+      </div>
+      <div>
+        <label for="dlgEvidencia">Evidencia</label>
+        <input id="dlgEvidencia" />
+      </div>
+    </div>
+
+    <label for="dlgDescripcion">Descripción</label>
+    <textarea id="dlgDescripcion"></textarea>
+
+    <label for="dlgAccion">Acción correctiva</label>
+    <textarea id="dlgAccion"></textarea>
+
+    <div class="hr"></div>
+
+    <div class="follow">
+      <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;">
+        <div>
+          <div style="font-weight:800">Seguimiento</div>
+          <div class="hint">Bitácora de avances con fecha. Clásico: lo escrito manda.</div>
+        </div>
+        <button class="btn primary" id="btnAddFollow" type="button">📝 Agregar seguimiento</button>
+      </div>
+      <div id="followList"></div>
+    </div>
+
+    <div class="hr"></div>
+    <div style="display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap;">
+      <button class="btn ok" id="btnSaveDlg" type="button">💾 Guardar cambios</button>
+      <button class="btn danger" id="btnDelete" type="button">🗑️ Eliminar registro</button>
+    </div>
+  </div>
+</dialog>
+
+<!-- DIALOG: ADD FOLLOW-UP -->
+<dialog id="dlgFollow">
+  <div class="dlg-hd">
+    <div style="font-weight:800">Nuevo seguimiento</div>
+    <button class="btn" id="dlgFollowClose" type="button">✖️ Cerrar</button>
+  </div>
+  <div class="dlg-bd">
+    <div class="row">
+      <div>
+        <label for="fDate">Fecha</label>
+        <input id="fDate" type="date" />
+      </div>
+      <div>
+        <label for="fType">Tipo</label>
+        <select id="fType">
+          <option>Avance</option>
+          <option>Capacitación</option>
+          <option>Evidencia</option>
+          <option>Visita</option>
+          <option>Observación</option>
+          <option>Cierre</option>
+        </select>
+      </div>
+    </div>
+    <label for="fNote">Nota</label>
+    <textarea id="fNote" placeholder="Ej: Se capacitó, evidencia en carpeta, firma en lista..."></textarea>
+    <div class="hr"></div>
+    <button class="btn ok" id="btnSaveFollow" type="button">✅ Guardar seguimiento</button>
+  </div>
+</dialog>
+
+<script>
+const KEY = "alpacel_agenda_v3_catalogo";
+const KEY_CATALOG = "alpacel_catalogo_zonas_farmacias_v1";
+
+const nowISO = () => new Date().toISOString();
+const uid = () => Math.random().toString(16).slice(2) + "-" + Date.now().toString(16);
+const $ = (id)=>document.getElementById(id);
+
+function safeText(t){ return (t ?? "").toString(); }
+function escapeHTML(str){ return safeText(str).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;"); }
+function formatDate(d){ if(!d) return "—"; try{ const [y,m,day] = d.split("-"); return `${day}/${m}/${y}`; }catch{ return d; } }
+function snippet(text, n){ const t = safeText(text).replace(/\s+/g," ").trim(); return t.length > n ? t.slice(0,n-1)+"…" : t; }
+function uniq(arr){ return Array.from(new Set(arr.filter(Boolean))); }
+
+function prioRank(p){ if(p==="Alta") return 3; if(p==="Media") return 2; return 1; }
+function statusRank(s){ const map={"Abierta":1,"En proceso":2,"En espera":3,"Cerrada":4}; return map[s] || 99; }
+function badgeClassStatus(s){ if(s==="Cerrada") return "ok"; if(s==="Abierta") return "bad"; return "warn"; }
+function badgeClassPrio(p){ if(p==="Alta") return "bad"; if(p==="Media") return "warn"; return "info"; }
+function isOverdue(item){ if(!item.fechaLimite) return false; if(item.estatus==="Cerrada") return false; return new Date(item.fechaLimite) < new Date(new Date().toISOString().slice(0,10)); }
+
+function loadData(){ try{ const raw = localStorage.getItem(KEY); return raw ? JSON.parse(raw) : []; }catch{ return []; } }
+function saveData(items){ localStorage.setItem(KEY, JSON.stringify(items)); }
+
+function loadCatalog(){ try{ const raw = localStorage.getItem(KEY_CATALOG); return raw ? JSON.parse(raw) : []; }catch{ return []; } }
+function saveCatalog(rows){ localStorage.setItem(KEY_CATALOG, JSON.stringify(rows)); }
+
+let items = loadData();
+let catalog = loadCatalog();
+let activeId = null;
+
+// DOM refs
+const form = $("anomForm");
+const zona = $("zona");
+const farmaciaSel = $("farmaciaSel");
+const farmacia = $("farmacia");
+const franquicia = $("franquicia");
+const area = $("area");
+const tipo = $("tipo");
+const descripcion = $("descripcion");
+const prioridad = $("prioridad");
+const estatus = $("estatus");
+const fechaDeteccion = $("fechaDeteccion");
+const responsable = $("responsable");
+const fechaLimite = $("fechaLimite");
+const evidencia = $("evidencia");
+const accion = $("accion");
+
+// Filters
+const q = $("q");
+const fZona = $("fZona");
+const fFarmacia = $("fFarmacia");
+const fEstatus = $("fEstatus");
+const fPrioridad = $("fPrioridad");
+const sortBy = $("sortBy");
+const fromDate = $("fromDate");
+const toDate = $("toDate");
+
+const list = $("list");
+const kpis = $("kpis");
+
+// Dialogs
+const dlg = $("dlg");
+$("dlgClose").addEventListener("click", ()=> dlg.close());
+
+const dlgFollow = $("dlgFollow");
+$("dlgFollowClose").addEventListener("click", ()=> dlgFollow.close());
+
+const dlgCatalog = $("dlgCatalog");
+$("btnCatalog").addEventListener("click", ()=> {
+  $("catalogText").value = "";
+  renderCatalogStats();
+  dlgCatalog.showModal();
+});
+$("btnCatalogClose").addEventListener("click", ()=> dlgCatalog.close());
+
+// Detail dialog fields
+const dlgTitle = $("dlgTitle");
+const dlgSub = $("dlgSub");
+const dlgZona = $("dlgZona");
+const dlgFarmacia = $("dlgFarmacia");
+const dlgFranquicia = $("dlgFranquicia");
+const dlgFechaDeteccion = $("dlgFechaDeteccion");
+const dlgEstatus = $("dlgEstatus");
+const dlgPrioridad = $("dlgPrioridad");
+const dlgTipo = $("dlgTipo");
+const dlgFechaLimite = $("dlgFechaLimite");
+const dlgResponsable = $("dlgResponsable");
+const dlgEvidencia = $("dlgEvidencia");
+const dlgDescripcion = $("dlgDescripcion");
+const dlgAccion = $("dlgAccion");
+const followList = $("followList");
+
+$("btnSaveDlg").addEventListener("click", saveDialogChanges);
+$("btnDelete").addEventListener("click", deleteActive);
+$("btnAddFollow").addEventListener("click", ()=> {
+  $("fDate").value = new Date().toISOString().slice(0,10);
+  $("fType").value = "Avance";
+  $("fNote").value = "";
+  dlgFollow.showModal();
+});
+$("btnSaveFollow").addEventListener("click", saveFollowUp);
+
+// Top buttons
+$("btnNew").addEventListener("click", ()=>{ clearForm(); zona.focus(); });
+$("btnClear").addEventListener("click", clearForm);
+$("btnExport").addEventListener("click", exportJSON);
+$("importFile").addEventListener("change", importJSON);
+$("btnWipe").addEventListener("click", wipeAll);
+
+// Catalog buttons
+$("btnSaveCatalog").addEventListener("click", ()=>{
+  const raw = $("catalogText").value.trim();
+  if(!raw){ alert("Pega el catálogo primero 🙂"); return; }
+  const rows = parseCatalog(raw);
+  if(rows.length===0){ alert("No pude leer filas. Revisa formato."); return; }
+  catalog = rows;
+  saveCatalog(catalog);
+  hydrateCatalogUI();
+  renderCatalogStats();
+  alert("Catálogo guardado ✅");
+});
+$("btnClearCatalog").addEventListener("click", ()=>{
+  if(!confirm("¿Borrar el catálogo?")) return;
+  catalog = [];
+  saveCatalog(catalog);
+  hydrateCatalogUI();
+  renderCatalogStats();
+});
+
+function parseCatalog(raw){
+  // Acepta TSV, CSV o copia de Excel
+  const lines = raw.split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
+  const out = [];
+  for(const line of lines){
+    if(/^ZONA\s*[\t,;|]/i.test(line)) continue; // header
+    const parts = line.split(/\t|\s*\|\s*|\s*;\s*|\s*,\s*/);
+    if(parts.length < 3) continue;
+    const z = parts[0].trim();
+    const fr = parts[1].trim();
+    const fa = parts.slice(2).join(" ").trim();
+    if(!z || !fa) continue;
+    out.push({ zona:z, franquicia:fr, farmacia:fa });
+  }
+  // dedupe por zona+farmacia
+  const map = new Map();
+  for(const r of out){
+    const k = (r.zona+"||"+r.farmacia).toUpperCase();
+    if(!map.has(k)) map.set(k, r);
+  }
+  return Array.from(map.values()).sort((a,b)=> (a.zona+a.farmacia).localeCompare(b.zona+b.farmacia));
+}
+
+function renderCatalogStats(){
+  const statsEl = $("catalogStats");
+  if(!catalog || catalog.length===0){
+    statsEl.textContent = "Sin catálogo cargado. (Funciona igual, pero sin listas automáticas.)";
+    return;
+  }
+  const zonas = uniq(catalog.map(x=>x.zona)).length;
+  const farm = uniq(catalog.map(x=>x.farmacia)).length;
+  statsEl.innerHTML = `Catálogo cargado: <b>${catalog.length}</b> filas • <b>${zonas}</b> zonas • <b>${farm}</b> farmacias únicas.`;
+}
+
+function hydrateCatalogUI(){
+  // 1) repoblar farmaciaSel según zona actual
+  updateFarmaciaSelect();
+  // 2) filtro farmacia
+  updateFilterFarmacia();
+}
+
+function updateFarmaciaSelect(){
+  const z = zona.value;
+  const opts = catalog.filter(r=>r.zona===z).sort((a,b)=> (a.farmacia||"").localeCompare(b.farmacia||""));
+  farmaciaSel.innerHTML = z ? `<option value="">Selecciona…</option>` : `<option value="">— Selecciona zona primero —</option>`;
+  for(const r of opts){
+    const opt = document.createElement("option");
+    opt.value = r.farmacia;
+    opt.textContent = r.farmacia;
+    opt.dataset.franquicia = r.franquicia || "";
+    farmaciaSel.appendChild(opt);
+  }
+  if(!z){ franquicia.value=""; }
+}
+
+function updateFilterFarmacia(){
+  const z = fZona.value;
+  const opts = (z ? catalog.filter(r=>r.zona===z) : catalog).map(r=>r.farmacia);
+  const unique = uniq(opts).sort((a,b)=> a.localeCompare(b));
+  const current = fFarmacia.value;
+  fFarmacia.innerHTML = `<option value="">Todas</option>`;
+  for(const fa of unique){
+    const opt = document.createElement("option");
+    opt.value = fa;
+    opt.textContent = fa;
+    fFarmacia.appendChild(opt);
+  }
+  if(unique.includes(current)) fFarmacia.value = current; else fFarmacia.value = "";
+}
+
+zona.addEventListener("change", ()=>{
+  updateFarmaciaSelect();
+  // si el usuario cambia zona, también limpia farmacia seleccionada/ manual
+  farmaciaSel.value = "";
+  farmacia.value = "";
+  franquicia.value = "";
+});
+
+farmaciaSel.addEventListener("change", ()=>{
+  const sel = farmaciaSel.selectedOptions?.[0];
+  const fa = farmaciaSel.value;
+  const fr = sel?.dataset?.franquicia || "";
+  if(fa){ farmacia.value = fa; franquicia.value = fr; }
+});
+
+// Set default date
+if(!fechaDeteccion.value) fechaDeteccion.value = new Date().toISOString().slice(0,10);
+
+// Filters events
+[q,fZona,fFarmacia,fEstatus,fPrioridad,sortBy,fromDate,toDate].forEach(el=> el.addEventListener("input", ()=>{ updateFilterFarmacia(); render(); }));
+fZona.addEventListener("change", ()=>{ updateFilterFarmacia(); render(); });
+
+form.addEventListener("submit", (e)=>{
+  e.preventDefault();
+  const item = {
+    id: uid(),
+    zona: safeText(zona.value).trim(),
+    farmacia: safeText(farmacia.value).trim(),
+    franquicia: safeText(franquicia.value).trim(),
+    area: safeText(area.value).trim(),
+    tipo: safeText(tipo.value).trim(),
+    descripcion: safeText(descripcion.value).trim(),
+    prioridad: safeText(prioridad.value).trim(),
+    estatus: safeText(estatus.value).trim(),
+    responsable: safeText(responsable.value).trim(),
+    fechaDeteccion: safeText(fechaDeteccion.value).trim(),
+    fechaLimite: safeText(fechaLimite.value).trim(),
+    evidencia: safeText(evidencia.value).trim(),
+    accion: safeText(accion.value).trim(),
+    follow: [],
+    createdAt: nowISO(),
+    updatedAt: nowISO()
+  };
+  items.unshift(item);
+  saveData(items);
+  clearForm();
+  render();
+});
+
+function clearForm(){
+  zona.value = "";
+  farmaciaSel.innerHTML = `<option value="">— Selecciona zona primero —</option>`;
+  farmacia.value = "";
+  franquicia.value = "";
+  area.value = "";
+  tipo.value = "Visita";
+  descripcion.value = "";
+  prioridad.value = "Media";
+  estatus.value = "Abierta";
+  responsable.value = "";
+  fechaLimite.value = "";
+  fechaDeteccion.value = new Date().toISOString().slice(0,10);
+  evidencia.value = "";
+  accion.value = "";
+}
+
+function openItem(id){
+  const item = items.find(x=>x.id===id);
+  if(!item) return;
+  activeId = id;
+
+  dlgTitle.textContent = `${item.zona || "Sin zona"} • ${item.farmacia || "Sin farmacia"}`;
+  dlgSub.textContent = `Fecha: ${formatDate(item.fechaDeteccion)} • Última actualización: ${new Date(item.updatedAt).toLocaleString()}`;
+
+  dlgZona.value = item.zona || "";
+  dlgFarmacia.value = item.farmacia || "";
+  dlgFranquicia.value = item.franquicia || "";
+  dlgFechaDeteccion.value = item.fechaDeteccion || "";
+
+  dlgEstatus.value = item.estatus || "Abierta";
+  dlgPrioridad.value = item.prioridad || "Media";
+  dlgTipo.value = item.tipo || "Visita";
+
+  dlgFechaLimite.value = item.fechaLimite || "";
+  dlgResponsable.value = item.responsable || "";
+  dlgEvidencia.value = item.evidencia || "";
+  dlgDescripcion.value = item.descripcion || "";
+  dlgAccion.value = item.accion || "";
+
+  renderFollow(item);
+  dlg.showModal();
+}
+
+function renderFollow(item){
+  const f = item.follow || [];
+  if(f.length === 0){
+    followList.innerHTML = `<div class="hint">Sin seguimientos aún. Traducción: “se puede olvidar”.</div>`;
+    return;
+  }
+  followList.innerHTML = f.slice().sort((a,b)=> (a.date||"").localeCompare(b.date||"")).map((x, idx)=>`
+    <div class="follow-entry">
+      <div class="meta">
+        <span class="badge info">${formatDate(x.date)}</span>
+        <span class="badge">${escapeHTML(x.type)}</span>
+        <span class="badge">${idx+1}/${f.length}</span>
+      </div>
+      <div style="margin-top:8px; white-space:pre-wrap">${escapeHTML(x.note)}</div>
+      <div style="margin-top:10px; display:flex; justify-content:flex-end; gap:8px; flex-wrap:wrap;">
+        <button class="btn danger" type="button" onclick="removeFollow('${item.id}','${x.id}')">🗑️ Quitar</button>
+      </div>
+    </div>
+  `).join("");
+}
+
+function saveDialogChanges(){
+  const item = items.find(x=>x.id===activeId);
+  if(!item) return;
+
+  item.zona = dlgZona.value || "";
+  item.farmacia = (dlgFarmacia.value || "").trim();
+  item.franquicia = (dlgFranquicia.value || "").trim();
+  item.fechaDeteccion = dlgFechaDeteccion.value || item.fechaDeteccion || "";
+
+  item.estatus = dlgEstatus.value;
+  item.prioridad = dlgPrioridad.value;
+  item.tipo = dlgTipo.value;
+
+  item.fechaLimite = dlgFechaLimite.value || "";
+  item.responsable = dlgResponsable.value || "";
+  item.evidencia = dlgEvidencia.value || "";
+  item.descripcion = dlgDescripcion.value || "";
+  item.accion = dlgAccion.value || "";
+  item.updatedAt = nowISO();
+
+  saveData(items);
+  render();
+  dlg.close();
+}
+
+function deleteActive(){
+  if(!activeId) return;
+  const item = items.find(x=>x.id===activeId);
+  const name = item ? (item.farmacia || "este registro") : "este registro";
+  if(!confirm(`¿Eliminar ${name}? Esto no se puede deshacer.`)) return;
+  items = items.filter(x=>x.id!==activeId);
+  saveData(items);
+  activeId = null;
+  render();
+  dlg.close();
+}
+
+function saveFollowUp(){
+  const item = items.find(x=>x.id===activeId);
+  if(!item) return;
+  const date = $("fDate").value;
+  const type = $("fType").value;
+  const note = $("fNote").value.trim();
+  if(!date || !note){ alert("Pon fecha y nota. Un seguimiento sin nota es como un acta sin firma."); return; }
+  item.follow = item.follow || [];
+  item.follow.push({ id: uid(), date, type, note });
+  item.updatedAt = nowISO();
+  if(type==="Cierre" && item.estatus!=="Cerrada") item.estatus="Cerrada";
+  saveData(items);
+  renderFollow(item);
+  dlgFollow.close();
+  render();
+}
+
+window.removeFollow = function(itemId, followId){
+  const item = items.find(x=>x.id===itemId);
+  if(!item) return;
+  item.follow = (item.follow||[]).filter(f=>f.id!==followId);
+  item.updatedAt = nowISO();
+  saveData(items);
+  renderFollow(item);
+  render();
+}
+
+function visitKey(x){ return [(x.zona||"").trim(), (x.farmacia||"").trim(), (x.fechaDeteccion||"").trim()].join("||"); }
+
+function applyFilters(){
+  const query = q.value.trim().toLowerCase();
+  const z = fZona.value;
+  const fa = fFarmacia.value;
+  const se = fEstatus.value;
+  const sp = fPrioridad.value;
+  const fd = fromDate.value;
+  const td = toDate.value;
+
+  return items.filter(x=>{
+    const hay = [x.zona,x.franquicia,x.farmacia,x.area,x.tipo,x.descripcion,x.prioridad,x.estatus,x.responsable,x.evidencia,x.accion].join(" ").toLowerCase();
+    if(query && !hay.includes(query)) return false;
+    if(z && x.zona !== z) return false;
+    if(fa && x.farmacia !== fa) return false;
+    if(se && x.estatus !== se) return false;
+    if(sp && x.prioridad !== sp) return false;
+    if(fd && x.fechaDeteccion && x.fechaDeteccion < fd) return false;
+    if(td && x.fechaDeteccion && x.fechaDeteccion > td) return false;
+    return true;
+  });
+}
+
+function applySort(arr){
+  const s = sortBy.value;
+  const a = arr.slice();
+  if(s==="updated_desc") a.sort((x,y)=> (y.updatedAt||"").localeCompare(x.updatedAt||""));
+  else if(s==="date_desc") a.sort((x,y)=> (y.fechaDeteccion||"").localeCompare(x.fechaDeteccion||""));
+  else if(s==="due_asc") a.sort((x,y)=> (x.fechaLimite||"9999-12-31").localeCompare(y.fechaLimite||"9999-12-31"));
+  else if(s==="prio_desc") a.sort((x,y)=> prioRank(y.prioridad) - prioRank(x.prioridad));
+  else if(s==="zona") a.sort((x,y)=> (x.zona||"").localeCompare(y.zona||""));
+  else if(s==="farmacia") a.sort((x,y)=> (x.farmacia||"").localeCompare(y.farmacia||""));
+  return a;
+}
+
+function renderKPIs(filtered){
+  const total = filtered.length;
+  const abiertas = filtered.filter(x=>x.estatus==="Abierta").length;
+  const proceso = filtered.filter(x=>x.estatus==="En proceso" || x.estatus==="En espera").length;
+  const cerradas = filtered.filter(x=>x.estatus==="Cerrada").length;
+  const vencidas = filtered.filter(isOverdue).length;
+
+  const zonasCubiertas = uniq(filtered.map(x=>x.zona)).length;
+  const farmaciasCubiertas = uniq(filtered.map(x=>x.farmacia)).length;
+  const visitasRealizadas = uniq(filtered.map(visitKey)).length;
+
+  kpis.innerHTML = `
+    <div class="kpi"><div class="t">Visitas realizadas</div><div class="n">${visitasRealizadas}</div></div>
+    <div class="kpi"><div class="t">Zonas • Farmacias</div><div class="n">${zonasCubiertas} • ${farmaciasCubiertas}</div></div>
+    <div class="kpi"><div class="t">Abiertas • En proceso</div><div class="n">${abiertas} • ${proceso}</div></div>
+    <div class="kpi"><div class="t">Cerradas • Vencidas</div><div class="n">${cerradas} • ${vencidas}</div></div>
+  `;
+}
+
+function render(){
+  const filtered = applySort(applyFilters());
+  renderKPIs(filtered);
+
+  if(filtered.length===0){
+    list.innerHTML = `<div class="hint">No hay registros con esos filtros. O todo perfecto… o el filtro te está troleando.</div>`;
+    return;
+  }
+
+  list.innerHTML = filtered.map(item=>{
+    const overdue = isOverdue(item);
+    const statusCls = badgeClassStatus(item.estatus);
+    const prioCls = badgeClassPrio(item.prioridad);
+    const dueTxt = item.fechaLimite ? formatDate(item.fechaLimite) : "—";
+    const followCount = (item.follow||[]).length;
+
+    return `
+      <div class="item" role="button" tabindex="0" data-open="${item.id}">
+        <div>
+          <h3>${escapeHTML(item.zona||"Sin zona")} — ${escapeHTML(item.farmacia||"Sin farmacia")} <span class="muted">• ${escapeHTML(item.area||"Sin área")}</span></h3>
+          <div class="meta">
+            ${item.franquicia ? `<span class="badge">Franquicia: ${escapeHTML(item.franquicia)}</span>` : ""}
+            <span class="badge info">${escapeHTML(item.tipo||"Registro")}</span>
+            <span class="badge ${statusCls}">${escapeHTML(item.estatus)}</span>
+            <span class="badge ${prioCls}">Prioridad: ${escapeHTML(item.prioridad)}</span>
+            <span class="badge">Fecha: ${formatDate(item.fechaDeteccion)}</span>
+            <span class="badge ${overdue ? "bad" : ""}">Compromiso: ${dueTxt}${overdue ? " ⚠️" : ""}</span>
+            <span class="badge">Seguimientos: ${followCount}</span>
+            ${item.responsable ? `<span class="badge">Resp: ${escapeHTML(item.responsable)}</span>` : ""}
+          </div>
+          <div class="hint" style="margin-top:10px; white-space:pre-wrap">${escapeHTML(snippet(item.descripcion, 160))}</div>
+        </div>
+        <div class="actions">
+          <span class="badge">Actualizar</span>
+          <span class="hint" style="text-align:right">${new Date(item.updatedAt).toLocaleString()}</span>
+        </div>
+      </div>
+    `;
+  }).join("");
+}
+
+list.addEventListener("click", (e)=>{
+  const card = e.target.closest?.(".item");
+  if(!card) return;
+  const id = card.getAttribute("data-open");
+  if(id) openItem(id);
+});
+list.addEventListener("keydown", (e)=>{
+  if(e.key!=="Enter" && e.key!==" ") return;
+  const card = e.target.closest?.(".item");
+  if(!card) return;
+  e.preventDefault();
+  const id = card.getAttribute("data-open");
+  if(id) openItem(id);
+});
+
+function exportJSON(){
+  const data = { app:"ALPACEL Agenda v3", version:3, exportedAt: nowISO(), items, catalog };
+  const blob = new Blob([JSON.stringify(data, null, 2)], {type:"application/json"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `ALPACEL_agenda_${new Date().toISOString().slice(0,10)}.json`;
+  document.body.appendChild(a);
+  a.click(); a.remove();
+  URL.revokeObjectURL(url);
+}
+
+function importJSON(ev){
+  const file = ev.target.files?.[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try{
+      const data = JSON.parse(reader.result);
+      const incomingItems = Array.isArray(data) ? data : (data.items || []);
+      const incomingCatalog = data.catalog || null;
+
+      if(Array.isArray(incomingCatalog)){ catalog = incomingCatalog; saveCatalog(catalog); }
+
+      if(!Array.isArray(incomingItems)) throw new Error("Formato inválido");
+      const map = new Map(items.map(x=>[x.id,x]));
+      for(const it of incomingItems){
+        if(!it.id) it.id = uid();
+        map.set(it.id, it);
+      }
+      items = Array.from(map.values());
+      saveData(items);
+      hydrateCatalogUI();
+      renderCatalogStats();
+      render();
+      alert("Importación lista ✅");
+    }catch(e){
+      alert("No se pudo importar: " + e.message);
+    }finally{
+      ev.target.value = "";
+    }
+  };
+  reader.readAsText(file, "utf-8");
+}
+
+function wipeAll(){
+  if(!confirm("¿Borrar TODO? Esto elimina todos los registros del navegador.")) return;
+  items = [];
+  saveData(items);
+  render();
+}
+
+// Init
+hydrateCatalogUI();
+renderCatalogStats();
+render();
+</script>
+</body>
+</html>
